@@ -5,150 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Davv Minifier</title>
   <style>
-    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
-      margin: 0;
       background: #f1f5f9;
       display: flex;
-      align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      align-items: center;
+      height: 100vh;
     }
     .container {
       background: #fff;
-      width: 95%;
-      max-width: 600px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       padding: 2rem;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 1rem;
-      color: #0f172a;
-    }
-    p {
-      text-align: center;
-      font-size: 0.95rem;
-      color: #475569;
-      margin-bottom: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 600px;
     }
     select, textarea, button {
       width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
       font-size: 1rem;
-      margin-bottom: 1rem;
-    }
-    select {
-      padding: 0.5rem;
-    }
-    textarea {
-      height: 160px;
-      padding: 0.8rem;
+      border-radius: 8px;
       border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      resize: vertical;
     }
-    .btn-group {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .btn-group button {
-      flex: 1;
-      padding: 0.6rem;
-      border: none;
-      border-radius: 8px;
+    button {
       background: #2563eb;
       color: white;
+      border: none;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
-    .btn-group button:hover {
+    button:hover {
       background: #1d4ed8;
     }
     .footer {
-      margin-top: 1rem;
       text-align: center;
-      font-size: 0.85rem;
+      margin-top: 2rem;
+      font-size: 0.875rem;
       color: #94a3b8;
-    }
-    .footer a {
-      color: #3b82f6;
-      text-decoration: none;
-      margin: 0 4px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Davv Minifier</h1>
-    <p>Minify HTML, CSS, or JavaScript directly in your browser</p>
-    <select id="type">
+    <h2 style="text-align:center">Davv Minifier</h2>
+    <p style="text-align:center;font-size:14px;color:#64748b">Minify HTML, CSS, or JS directly in your browser</p>
+    <select id="language">
       <option value="html">HTML</option>
       <option value="css">CSS</option>
       <option value="js">JavaScript</option>
     </select>
-    <textarea id="input" placeholder="Paste your code here..."></textarea>
-    <div class="btn-group">
-      <button onclick="minifyCode()">Minify</button>
-      <button onclick="copyOutput()">Copy</button>
-      <button onclick="clearAll()">Clear</button>
-    </div>
-    <textarea id="output" placeholder="Minified code appears here..." readonly></textarea>
+    <textarea id="input" rows="8" placeholder="Paste your code here..."></textarea>
+    <button onclick="minify()">Minify</button>
+    <textarea id="output" rows="8" placeholder="Minified code appears here..."></textarea>
     <div class="footer">
       © 2025 Davv Minifier | <a href="#">Privacy</a> | <a href="#">Terms</a>
     </div>
   </div>
 
-  <!--  CDN: Correct version with global access -->
-  <!--  Load CleanCSS UMD -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clean-css/5.3.2/browser.js"></script>
-
-<!--  Load HTMLMinifier UMD -->
-<script src="https://cdn.jsdelivr.net/npm/html-minifier-terser@6.1.0/dist/htmlminifier.umd.js"></script>
-
-<!--  Load Terser UMD -->
-<script src="https://cdn.jsdelivr.net/npm/terser@5.22.0/dist/bundle.min.js"></script>
-
+  <!--  FIXED CDN for HTML, CSS, and JS minifiers -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clean-css/5.3.2/browser.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html-minifier-terser@6.1.0/dist/htmlminifier.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/terser@5.22.0/dist/bundle.min.js"></script>
 
   <script>
-    async function minifyCode() {
-      const input = document.getElementById("input").value;
-      const type = document.getElementById("type").value;
-      const output = document.getElementById("output");
+    async function minify() {
+      const lang = document.getElementById('language').value;
+      const inputCode = document.getElementById('input').value.trim();
+      const output = document.getElementById('output');
 
       try {
-        if (type === "html") {
-          const result = htmlMinifier.minify(input, {
+        if (lang === 'html') {
+          const result = window.htmlMinifier.minify(inputCode, {
             collapseWhitespace: true,
             removeComments: true,
-            minifyCSS: true,
-            minifyJS: true,
+            removeRedundantAttributes: true,
+            removeEmptyAttributes: true
           });
           output.value = result;
-        } else if (type === "css") {
-          const cleaner = new CleanCSS();
-          const result = cleaner.minify(input);
-          output.value = result.styles;
-        } else if (type === "js") {
-          const result = await Terser.minify(input);
+        } else if (lang === 'css') {
+          const outputCSS = new CleanCSS().minify(inputCode);
+          output.value = outputCSS.styles;
+        } else if (lang === 'js') {
+          const result = await window.terser.minify(inputCode);
           output.value = result.code;
         }
       } catch (e) {
-        output.value = " Minify Error: " + e.message;
+        output.value = 'Minify Error: ' + e.message;
       }
-    }
-
-    function copyOutput() {
-      const output = document.getElementById("output");
-      output.select();
-      document.execCommand("copy");
-      alert(" Output copied!");
-    }
-
-    function clearAll() {
-      document.getElementById("input").value = "";
-      document.getElementById("output").value = "";
     }
   </script>
 </body>

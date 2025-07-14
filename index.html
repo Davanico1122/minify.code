@@ -82,7 +82,7 @@
 <body>
   <div class="container">
     <h1>Davv Minifier</h1>
-    <p>Minify your HTML, CSS, or JavaScript code instantly in your browser.</p>
+    <p>Minify HTML, CSS, or JavaScript directly in your browser</p>
     <select id="type">
       <option value="html">HTML</option>
       <option value="css">CSS</option>
@@ -94,18 +94,16 @@
       <button onclick="copyOutput()">Copy</button>
       <button onclick="clearAll()">Clear</button>
     </div>
-    <textarea id="output" placeholder="Output will appear here..." readonly></textarea>
+    <textarea id="output" placeholder="Minified code appears here..." readonly></textarea>
     <div class="footer">
-      © 2025 Davv Minifier. All code runs securely in your browser. |
-      <a href="#">Privacy</a> |
-      <a href="#">Terms</a>
+      © 2025 Davv Minifier | <a href="#">Privacy</a> | <a href="#">Terms</a>
     </div>
   </div>
 
-  <!--  Libraries CDN (Correct and working) -->
+  <!--  CDN: Correct version with global access -->
+  <script src="https://cdn.jsdelivr.net/npm/html-minifier-terser@6.1.0/dist/htmlminifier.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/clean-css@5.3.2/dist/clean-css.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/terser@5.22.0/dist/bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html-minifier-terser@7.2.0/dist/htmlminifier.min.js"></script>
 
   <script>
     async function minifyCode() {
@@ -115,24 +113,23 @@
 
       try {
         if (type === "html") {
-          const result = window.htmlMinifier.minify(input, {
+          const result = htmlMinifier.minify(input, {
             collapseWhitespace: true,
             removeComments: true,
-            removeEmptyAttributes: true,
             minifyCSS: true,
-            minifyJS: true
+            minifyJS: true,
           });
           output.value = result;
         } else if (type === "css") {
-          const cleaner = new window.cleanCSS();
+          const cleaner = new CleanCSS();
           const result = cleaner.minify(input);
           output.value = result.styles;
         } else if (type === "js") {
-          const result = await window.Terser.minify(input);
+          const result = await Terser.minify(input);
           output.value = result.code;
         }
-      } catch (err) {
-        output.value = " Minify Error: " + err.message;
+      } catch (e) {
+        output.value = " Minify Error: " + e.message;
       }
     }
 

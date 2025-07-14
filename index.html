@@ -5,96 +5,107 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Davv Minifier</title>
   <style>
-    :root {
-      --blue: #2563eb;
-      --bg: #f1f5f9;
-      --dark: #1e293b;
-      --text: #334155;
-    }
+    * { box-sizing: border-box; }
     body {
-      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      margin: 0;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
     .container {
-      max-width: 760px;
-      margin: 2rem auto;
-      padding: 2rem;
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      width: 95%;
+      max-width: 600px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
     }
     h1 {
       text-align: center;
-      color: var(--dark);
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      color: #0f172a;
+    }
+    p {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #475569;
+      margin-bottom: 1.5rem;
     }
     select, textarea, button {
       width: 100%;
       font-size: 1rem;
-      margin-top: 1rem;
-      padding: 0.75rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    select {
+      padding: 0.5rem;
     }
     textarea {
+      height: 160px;
+      padding: 0.8rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
       resize: vertical;
-      font-family: monospace;
-      min-height: 160px;
     }
-    .buttons {
+    .btn-group {
       display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
+      gap: 0.5rem;
     }
-    button {
+    .btn-group button {
       flex: 1;
-      background: var(--blue);
-      color: white;
+      padding: 0.6rem;
       border: none;
-      transition: 0.2s;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
-    button:hover {
+    .btn-group button:hover {
       background: #1d4ed8;
     }
-    footer {
+    .footer {
+      margin-top: 1rem;
       text-align: center;
-      margin-top: 2rem;
       font-size: 0.85rem;
-      color: #64748b;
+      color: #94a3b8;
+    }
+    .footer a {
+      color: #3b82f6;
+      text-decoration: none;
+      margin: 0 4px;
     }
   </style>
-
-  <!-- ✅ CDN LIBRARIES -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/terser/5.20.1/terser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier-terser/7.2.0/htmlminifier.min.js"></script>
-  <script src="https://unpkg.com/clean-css@5.3.2/dist/clean-css.browser.js"></script>
 </head>
 <body>
   <div class="container">
     <h1>Davv Minifier</h1>
-    <p style="text-align:center;">Minify your HTML, CSS, or JS directly in the browser.</p>
-
+    <p>Minify your HTML, CSS, or JavaScript code instantly in your browser.</p>
     <select id="type">
       <option value="html">HTML</option>
       <option value="css">CSS</option>
       <option value="js">JavaScript</option>
     </select>
-
     <textarea id="input" placeholder="Paste your code here..."></textarea>
-
-    <div class="buttons">
+    <div class="btn-group">
       <button onclick="minifyCode()">Minify</button>
       <button onclick="copyOutput()">Copy</button>
       <button onclick="clearAll()">Clear</button>
     </div>
-
-    <textarea id="output" placeholder="Minified output will appear here..." readonly></textarea>
-
-    <footer>&copy; 2025 Davv Minifier. All rights reserved.</footer>
+    <textarea id="output" placeholder="Output will appear here..." readonly></textarea>
+    <div class="footer">
+      © 2025 Davv Minifier. All code runs securely in your browser. |
+      <a href="#">Privacy</a> |
+      <a href="#">Terms</a>
+    </div>
   </div>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier-terser/7.2.0/htmlminifier.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/terser/5.20.1/terser.min.js"></script>
+  <script src="https://unpkg.com/clean-css@5.3.2/dist/clean-css.browser.js"></script>
 
   <script>
     async function minifyCode() {
@@ -116,7 +127,7 @@
           const result = new CleanCSS().minify(input);
           output.value = result.styles;
         } else if (type === "js") {
-          const result = await Terser.minify(input);
+          const result = await terser.minify(input);
           output.value = result.code;
         }
       } catch (err) {
@@ -128,7 +139,7 @@
       const output = document.getElementById("output");
       output.select();
       document.execCommand("copy");
-      alert("Output copied!");
+      alert(" Output copied!");
     }
 
     function clearAll() {

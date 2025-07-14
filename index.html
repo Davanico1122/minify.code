@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Online Code Minifier - Minify HTML, CSS, and JavaScript code instantly in your browser">
+    <meta name="keywords" content="minifier, code minifier, html minifier, css minifier, javascript minifier">
+    <meta name="author" content="Davanico">
+    <title>Online Code Minifier</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>?</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/terser/5.19.2/bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clean-css/5.3.2/clean-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-minifier-terser/7.2.0/html-minifier-terser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .toast {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .dropdown-open {
+            max-height: 200px;
+            opacity: 1;
+        }
+        .dropdown-closed {
+            max-height: 0;
+            opacity: 0;
+        }
+        .code-area {
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 toast">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span id="toast-message">Code copied to clipboard!</span>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="gradient-bg text-white rounded-2xl p-8 mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="inline-block">?</span> Online Code Minifier
+                </h1>
+                <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+                    Minify your HTML, CSS, and JavaScript code instantly. Fast, secure, and runs entirely in your browser.
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Input Section -->
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">Input Code</h2>
+                    
+                    <!-- Code Type Dropdown -->
+                    <div class="relative">
+                        <button id="dropdownButton" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors">
+                            <span id="selectedType">HTML</span>
+                            <svg class="w-4 h-4 ml-2 transition-transform" id="dropdownIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="dropdown" class="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border overflow-hidden dropdown-closed transition-all duration-200">
+                            <button class="dropdown-item w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors" data-type="HTML">HTML</button>
+                            <button class="dropdown-item w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors" data-type="CSS">CSS</button>
+                            <button class="dropdown-item w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors" data-type="JavaScript">JavaScript</button>
+                        </div>
+                    </div>
+                </div>
+
+                <textarea 
+                    id="inputCode" 
+                    class="w-full h-80 p-4 border-2 border-gray-200 rounded-lg code-area resize-none focus:border-blue-500 focus:outline-none transition-colors" 
+                    placeholder="Paste your code here..."
+                ></textarea>
+
+                <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button id="minifyBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Minify Code
+                    </button>
+                    <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">Minified Output</h2>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <span id="compressionRatio"></span>
+                    </div>
+                </div>
+
+                <textarea 
+                    id="outputCode" 
+                    class="w-full h-80 p-4 border-2 border-gray-200 rounded-lg code-area resize-none bg-gray-50 focus:border-blue-500 focus:outline-none transition-colors" 
+                    placeholder="Minified code will appear here..."
+                    readonly
+                ></textarea>
+
+                <div class="mt-6">
+                    <button id="copyBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy Output
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="mt-16 bg-white rounded-2xl p-8 card-shadow">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Features</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-2">100% Client-Side</h4>
+                    <p class="text-gray-600">All processing happens in your browser. Your code never leaves your device.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Lightning Fast</h4>
+                    <p class="text-gray-600">Instant minification powered by industry-standard tools like Terser and CleanCSS.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Multi-Language</h4>
+                    <p class="text-gray-600">Supports HTML, CSS, and JavaScript with optimized minification for each.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-gray-600">
+            <div class="border-t border-gray-200 pt-8">
+                <p class="mb-2">Built by <strong>Davanico</strong> | 2025</p>
+                <p class="text-sm">All code runs securely in your browser.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        class CodeMinifier {
+            constructor() {
+                this.currentType = 'HTML';
+                this.initializeElements();
+                this.bindEvents();
+            }
+
+            initializeElements() {
+                this.dropdownButton = document.getElementById('dropdownButton');
+                this.dropdown = document.getElementById('dropdown');
+                this.dropdownIcon = document.getElementById('dropdownIcon');
+                this.selectedType = document.getElementById('selectedType');
+                this.inputCode = document.getElementById('inputCode');
+                this.outputCode = document.getElementById('outputCode');
+                this.minifyBtn = document.getElementById('minifyBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.copyBtn = document.getElementById('copyBtn');
+                this.toast = document.getElementById('toast');
+                this.toastMessage = document.getElementById('toast-message');
+                this.compressionRatio = document.getElementById('compressionRatio');
+            }
+
+            bindEvents() {
+                // Dropdown events
+                this.dropdownButton.addEventListener('click', () => this.toggleDropdown());
+                document.addEventListener('click', (e) => this.handleOutsideClick(e));
+                
+                // Dropdown item selection
+                document.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.addEventListener('click', (e) => this.selectType(e.target.dataset.type));
+                });
+
+                // Button events
+                this.minifyBtn.addEventListener('click', () => this.minifyCode());
+                this.clearBtn.addEventListener('click', () => this.clearAll());
+                this.copyBtn.addEventListener('click', () => this.copyOutput());
+
+                // Input change event
+                this.inputCode.addEventListener('input', () => this.updateCopyButton());
+                this.outputCode.addEventListener('input', () => this.updateCopyButton());
+            }
+
+            toggleDropdown() {
+                const isOpen = this.dropdown.classList.contains('dropdown-open');
+                if (isOpen) {
+                    this.dropdown.classList.remove('dropdown-open');
+                    this.dropdown.classList.add('dropdown-closed');
+                    this.dropdownIcon.style.transform = 'rotate(0deg)';
+                } else {
+                    this.dropdown.classList.remove('dropdown-closed');
+                    this.dropdown.classList.add('dropdown-open');
+                    this.dropdownIcon.style.transform = 'rotate(180deg)';
+                }
+            }
+
+            handleOutsideClick(e) {
+                if (!this.dropdownButton.contains(e.target) && !this.dropdown.contains(e.target)) {
+                    this.dropdown.classList.remove('dropdown-open');
+                    this.dropdown.classList.add('dropdown-closed');
+                    this.dropdownIcon.style.transform = 'rotate(0deg)';
+                }
+            }
+
+            selectType(type) {
+                this.currentType = type;
+                this.selectedType.textContent = type;
+                this.toggleDropdown();
+                this.updatePlaceholder();
+            }
+
+            updatePlaceholder() {
+                const placeholders = {
+                    'HTML': 'Paste your HTML code here...',
+                    'CSS': 'Paste your CSS code here...',
+                    'JavaScript': 'Paste your JavaScript code here...'
+                };
+                this.inputCode.placeholder = placeholders[this.currentType];
+            }
+
+            async minifyCode() {
+                const code = this.inputCode.value.trim();
+                if (!code) {
+                    this.showToast('Please enter some code to minify!', 'error');
+                    return;
+                }
+
+                this.minifyBtn.disabled = true;
+                this.minifyBtn.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Processing...';
+
+                try {
+                    let minifiedCode = '';
+                    
+                    switch (this.currentType) {
+                        case 'HTML':
+                            minifiedCode = await this.minifyHTML(code);
+                            break;
+                        case 'CSS':
+                            minifiedCode = await this.minifyCSS(code);
+                            break;
+                        case 'JavaScript':
+                            minifiedCode = await this.minifyJS(code);
+                            break;
+                    }
+
+                    this.outputCode.value = minifiedCode;
+                    this.updateCompressionRatio(code, minifiedCode);
+                    this.showToast('Code minified successfully!', 'success');
+                    
+                } catch (error) {
+                    this.showToast(`Error: ${error.message}`, 'error');
+                    console.error('Minification error:', error);
+                } finally {
+                    this.minifyBtn.disabled = false;
+                    this.minifyBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>Minify Code';
+                    this.updateCopyButton();
+                }
+            }
+
+            async minifyHTML(code) {
+                if (typeof htmlMinifier === 'undefined') {
+                    throw new Error('HTML minifier not loaded');
+                }
+                
+                return htmlMinifier.minify(code, {
+                    removeComments: true,
+                    removeRedundantAttributes: true,
+                    removeEmptyAttributes: true,
+                    removeOptionalTags: true,
+                    collapseWhitespace: true,
+                    conservativeCollapse: true,
+                    minifyCSS: true,
+                    minifyJS: true,
+                    removeScriptTypeAttributes: true,
+                    removeStyleLinkTypeAttributes: true,
+                    useShortDoctype: true
+                });
+            }
+
+            async minifyCSS(code) {
+                if (typeof CleanCSS === 'undefined') {
+                    throw new Error('CSS minifier not loaded');
+                }
+                
+                const cleanCSS = new CleanCSS({
+                    level: 2,
+                    format: 'keep-breaks'
+                });
+                
+                const result = cleanCSS.minify(code);
+                if (result.errors.length > 0) {
+                    throw new Error(result.errors.join(', '));
+                }
+                
+                return result.styles;
+            }
+
+            async minifyJS(code) {
+                if (typeof Terser === 'undefined') {
+                    throw new Error('JavaScript minifier not loaded');
+                }
+                
+                const result = await Terser.minify(code, {
+                    compress: {
+                        dead_code: true,
+                        drop_console: false,
+                        drop_debugger: true,
+                        keep_classnames: false,
+                        keep_fnames: false,
+                        keep_infinity: false
+                    },
+                    mangle: {
+                        toplevel: true,
+                        keep_classnames: false,
+                        keep_fnames: false
+                    },
+                    output: {
+                        comments: false,
+                        beautify: false
+                    }
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                return result.code;
+            }
+
+            updateCompressionRatio(original, minified) {
+                const originalSize = original.length;
+                const minifiedSize = minified.length;
+                const ratio = ((originalSize - minifiedSize) / originalSize * 100).toFixed(1);
+                const savings = originalSize - minifiedSize;
+                
+                this.compressionRatio.textContent = `${ratio}% smaller (${savings} chars saved)`;
+            }
+
+            clearAll() {
+                this.inputCode.value = '';
+                this.outputCode.value = '';
+                this.compressionRatio.textContent = '';
+                this.updateCopyButton();
+                this.showToast('All fields cleared!', 'success');
+            }
+
+            async copyOutput() {
+                const output = this.outputCode.value;
+                if (!output) {
+                    this.showToast('No output to copy!', 'error');
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(output);
+                    this.showToast('Code copied to clipboard!', 'success');
+                } catch (error) {
+                    // Fallback for older browsers
+                    this.outputCode.select();
+                    document.execCommand('copy');
+                    this.showToast('Code copied to clipboard!', 'success');
+                }
+            }
+
+            updateCopyButton() {
+                const hasOutput = this.outputCode.value.trim().length > 0;
+                this.copyBtn.disabled = !hasOutput;
+            }
+
+            showToast(message, type = 'success') {
+                this.toastMessage.textContent = message;
+                
+                // Update toast color based on type
+                if (type === 'error') {
+                    this.toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 toast show';
+                } else {
+                    this.toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 toast show';
+                }
+
+                // Hide toast after 3 seconds
+                setTimeout(() => {
+                    this.toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new CodeMinifier();
+        });
+    </script>
+</body>
+</html>

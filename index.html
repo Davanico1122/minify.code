@@ -101,9 +101,15 @@
   </div>
 
   <!--  CDN: Correct version with global access -->
-  <script src="https://cdn.jsdelivr.net/npm/html-minifier-terser@6.1.0/dist/htmlminifier.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/clean-css@5.3.2/dist/clean-css.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/terser@5.22.0/dist/bundle.min.js"></script>
+  <!--  Load CleanCSS UMD -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clean-css/5.3.2/browser.js"></script>
+
+<!--  Load HTMLMinifier UMD -->
+<script src="https://cdn.jsdelivr.net/npm/html-minifier-terser@6.1.0/dist/htmlminifier.umd.js"></script>
+
+<!--  Load Terser UMD -->
+<script src="https://cdn.jsdelivr.net/npm/terser@5.22.0/dist/bundle.min.js"></script>
+
 
   <script>
     async function minifyCode() {
